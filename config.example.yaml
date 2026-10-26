@@ -1,0 +1,110 @@
+# Copy to config.yaml. All values below are generic examples, not your preferences.
+# Paths resolve from the repository root even when launched from another folder.
+# Unknown keys, wrong types, and inconsistent bounds stop startup with field errors.
+# Environment overrides: JOBFINDER__SECTION__FIELD (JSON for lists/numbers/bools).
+timezone: UTC # Any IANA timezone, e.g. Europe/London.
+
+search:
+  job_titles: [Software Engineer, Backend Developer] # Required; any profession.
+  country: UK # JobSpy country_indeed spelling; consult REQUIREMENTS.md.
+  locations: [London] # One search per title, location and enabled site.
+  experience_levels: [] # Optional descriptions: [entry level, mid level]. Empty = any.
+  minimum_required_experience: 0 # Mandatory experience band, inclusive.
+  maximum_required_experience: 50 # Open-ended requirements qualify by their minimum.
+  keep_unknown_experience: true # Keep postings that do not state mandatory years.
+  work_arrangements: [remote, hybrid, onsite] # [remote] requests remote-only searches.
+  keep_unknown_work_arrangement: true # Some boards omit this metadata.
+  employment_types: [full_time] # Also contract, contract_to_hire, part_time, internship, temporary.
+  keep_unknown_employment_type: true
+  exclusion_keywords: [] # Case-insensitive substrings in title or description.
+  tracked_keywords: [] # Optional terms for initial ranking; LLM keywords are open-ended.
+  additional_queries: [] # Optional specialty or industry discovery phrases.
+  require_sponsorship: false # true rejects explicit no-sponsorship/OPT restrictions.
+  keep_unknown_sponsorship: true # Applies only when require_sponsorship=true.
+  verify_employer: true # Follow public employer links; unavailable pages are labeled.
+  batch_size: 5 # No fixed five-job cap; consider email attachment size and compute.
+  recent_days: 7
+  recent_share: 1.0 # 1=recent only, 0=any age including unknown dates; fractions mix.
+  results_per_source: 20 # Maximum requested per query/location/site search.
+  source_timeout_seconds: 90
+  max_candidates_to_analyze: 25 # Must be >= batch_size.
+  max_candidates_to_tailor: 10 # Failed resumes are replaced within this bound.
+  sites: # Disable any site independently; all disabled permits imported-job runs.
+    linkedin:
+      enabled: true
+      request_interval_seconds: 3.0 # Minimum pause between source operations.
+    indeed:
+      enabled: true
+      request_interval_seconds: 3.0
+    glassdoor:
+      enabled: false
+      request_interval_seconds: 3.0
+    company_careers:
+      enabled: true
+      request_interval_seconds: 3.0
+  company_urls: [] # Optional public individual employer/ATS posting URLs.
+  company_domains: [jobs.lever.co, boards.greenhouse.io, job-boards.greenhouse.io, myworkdayjobs.com]
+  discovery_region: wt-wt # DDGS region; use an appropriate regional code if needed.
+
+llm:
+  base_url: http://localhost:11434 # Loopback only. Models must be downloaded locally.
+  models: # Any locally installed Ollama model with reliable structured JSON output.
+    job_parser: llama3.1:8b
+    keyword_extractor: llama3.1:8b
+    resume_tailorer: llama3.1:8b
+    resume_reviewer: llama3.1:8b
+  reasoning: # Sent as think effort only for compatible gpt-oss model tags.
+    job_parser: low
+    keyword_extractor: medium
+    resume_tailorer: medium
+    resume_reviewer: low
+  timeout_seconds: 600.0
+  keep_alive: '0' # Unload after each request to reduce model memory contention.
+  num_ctx: 16384 # Context tokens; increasing this increases memory use.
+  num_predict: 4096 # Output-token budget, capped at half the context for initial calls.
+  max_input_characters: 50000 # Explicit safeguard; input is never silently truncated.
+  retries: 1 # Schema correction retries, 0..2; connection errors do not loop.
+  agent_limits: {} # Optional role overrides, e.g.:
+  #   resume_tailorer:
+  #     timeout_seconds: 900.0
+  #     num_ctx: 32768
+  #     max_input_characters: 75000
+
+resume:
+  base_path: templates/base_resume.docx # Required: supply your own Word DOCX.
+  factual_review_mode: strict # strict blocks unsupported claims; advisory flags them.
+  source_context_scope: role # role or full_resume; advisory uses full source context.
+  editable_sections: [summary, skills, experience_bullets, project_descriptions]
+  wording_strategy: blend_job_language # Also rephrase or prefer_verbatim_job_lines.
+  save_updated_skills: false # Optional generated skill history; advisory mode only.
+  # These are editable label aliases, not fixed paragraph numbers or required sections.
+  # Extend/replace labels for your layout or language. Unknown headings stay protected.
+  section_aliases:
+    summary: [summary, professional summary, profile, objective, about me]
+    skills: [skills, technical skills, core competencies, expertise]
+    experience_bullets: [experience, work experience, professional experience, employment history]
+    project_descriptions: [projects, personal projects, selected projects]
+  protected_headings: [education, certifications, certificates, awards, publications, languages, interests, references]
+
+email:
+  enabled: false # true sends automatically after a successful run; --preview suppresses.
+  sender: sender@example.com # Dummy addresses. Replace before enabling.
+  recipient: recipient@example.com # One recipient per digest.
+  username: '' # Empty uses sender. Set when SMTP username differs from From address.
+  host: smtp.example.com # Your SMTP provider, not an enforced Gmail server.
+  port: 465 # Typically 465 for ssl; typically 587 for starttls.
+  security: ssl # ssl or starttls; credentials are never sent without TLS.
+  password_environment_variable: JOBFINDER_SMTP_PASSWORD # Uppercase variable NAME; secret value belongs in .env.
+  timeout_seconds: 30.0
+  max_message_bytes: 20000000
+  # Plain-text files using $placeholders; $$ escapes a literal dollar sign.
+  # null uses the built-in detailed template, including policy and factual warnings.
+  subject_template: templates/notifications/subject.txt
+  intro_template: templates/notifications/intro.txt
+  job_template: null # See templates/notifications/job.example.txt and REQUIREMENTS.md.
+  footer_template: templates/notifications/footer.txt
+
+paths: # Distinct, non-nested paths. Keep the source resume outside all three.
+  data: data # State, raw job postings, optional generated skill context.
+  logs: logs # Run reports and model/keyword/tailoring diagnostics.
+  output: output # Tailored DOCX copies, audits and notification outbox.

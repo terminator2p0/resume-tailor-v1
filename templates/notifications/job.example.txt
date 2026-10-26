@@ -1,0 +1,11 @@
+$index. $job_title — $company
+Location: $location | $work_arrangement | $employment_type
+Required experience: $required_experience
+Posted: $posted
+Sponsorship policy: $sponsorship_status
+$verification_note
+Matched skills: $matched_skills
+Potential gaps: $gaps
+Apply: $application_url
+Resume: $resume_filename
+$factual_review_note

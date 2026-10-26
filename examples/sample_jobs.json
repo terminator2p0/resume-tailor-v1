@@ -1,0 +1,12 @@
+[
+  {
+    "job_title": "Software Engineer",
+    "company": "Fictitious Example Company",
+    "location": "London, UK",
+    "job_description": "FICTITIOUS DEMO POSTING. Build and maintain backend services using Python. Collaborate with product teams on reliable APIs and automated tests. Full-time role based in London, UK with remote and hybrid options. Experience requirements are not stated.",
+    "application_url": "https://example.com/fictitious-job",
+    "employment_type": "full_time",
+    "work_arrangement": "hybrid",
+    "source": "sample"
+  }
+]
